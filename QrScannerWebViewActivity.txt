@@ -1,0 +1,41 @@
+
+public class QrScannerWebViewActivity extends AppCompatActivity {
+    ActivityQrScannerWebViewBinding binding;
+    AdMob adsMob = new AdMob(this);
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityQrScannerWebViewBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // WebView Settings
+        adsMob.Banner(binding.yourAdLayout);
+
+        WebSettings webSettings = binding.webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);  // Enable JavaScript
+
+        binding.webView.setWebViewClient(new WebViewClient());
+        binding.webView.loadUrl(getIntent().getStringExtra("data"));
+        binding.lay.title.setText(getResources().getString(R.string.your_result));
+        binding.lay.btnBack.setOnClickListener(view -> adsMob.showInterstitialAndMove(QrGeneratorActivity.class));
+        onBackPressedButton();
+    }
+
+    private void onBackPressedButton() {
+        this.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isEnabled()) {
+                    setEnabled(false);
+                    if (binding.webView.canGoBack()) {
+                        binding.webView.goBack();
+                    } else {
+                        adsMob.showInterstitialAndMove(QrGeneratorActivity.class);
+                    }
+                }
+            }
+        });
+    }
+}

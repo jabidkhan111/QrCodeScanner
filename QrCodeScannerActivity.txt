@@ -1,0 +1,172 @@
+
+public class QrCodeScannerActivity extends AppCompatActivity {
+    ActivityQrCodeScannerBinding binding;
+    public CodeScanner codeScanner;
+    private static final int CAMERA_REQUEST = 1001;
+    String scannerResult;
+    private Timer timer;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivityQrCodeScannerBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+
+        buttonClick();
+        onBackPressedButton();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openScanner();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST
+            );
+        }
+    }
+
+    private void buttonClick() {
+        binding.lay.title.setText(getString(R.string.your_result));
+        binding.lay.btnBack.setOnClickListener(view -> {
+            binding.scannerView.setVisibility(View.VISIBLE);
+            binding.relative.setVisibility(View.GONE);
+        });
+        binding.againScan.setOnClickListener(view -> recreate());
+        binding.btnShare.setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Share App");
+                intent.putExtra(Intent.EXTRA_TEXT, scannerResult);
+                startActivity(Intent.createChooser(intent, "Share by"));
+            } catch (Exception e) {
+                Toast.makeText(QrCodeScannerActivity.this, "Send to Unable App", Toast.LENGTH_SHORT).show();
+            }
+        });
+        binding.btnWebView.setOnClickListener(v -> {
+            Intent intent = new Intent(QrCodeScannerActivity.this, QrScannerWebViewActivity.class);
+            intent.putExtra("data", scannerResult);
+            startActivity(intent);
+        });
+        binding.btnCopy.setOnClickListener(v -> {
+            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (!scannerResult.isEmpty()) {
+                ClipData clipData = ClipData.newPlainText("Text", scannerResult);
+                clipboardManager.setPrimaryClip(clipData);
+                Toast.makeText(QrCodeScannerActivity.this, "Copy Data.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+    private void showPermissionDeniedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permission Required")
+                .setMessage("To scan QR codes, you must allow this app to access the camera." +
+                        "\n\n" +
+                        "Follow the steps below to enable camera access:" +
+                        "\n\n" +
+                        "1. Open Settings from the button below." +
+                        "\n2. Click on Permissions." +
+                        "\n3. Allow access for Camera.")
+                .setPositiveButton("Open Settings", (dialog, which) -> openAppSettings())
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    Intent intent = new Intent(QrCodeScannerActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    // Finish the current activity if needed
+                    finish();
+                })
+                .create()
+                .show();
+    }
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }
+    private void onBackPressedButton() {
+        this.getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isEnabled()) {
+                    setEnabled(false);
+                    startActivity(new Intent(QrCodeScannerActivity.this, MainActivity.class));
+                    finishAffinity();
+
+                }
+            }
+        });
+    }
+    private void openScanner() {
+        stopScanner();
+        codeScanner = new CodeScanner(this, binding.scannerView);
+        View redLine = findViewById(R.id.red_line);
+        codeScanner.setAutoFocusEnabled(true);
+        codeScanner.setDecodeCallback(result -> runOnUiThread(() -> {
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
+            scannerResult = result.getText();
+            if (scannerResult != null) {
+                binding.relative.setVisibility(View.VISIBLE);
+                binding.scannerView.setVisibility(View.GONE);
+                binding.redLine.setVisibility(View.GONE);
+                binding.result.setText(scannerResult);
+            } else {
+                binding.scannerView.setVisibility(View.VISIBLE);
+            }
+        }));
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            boolean visible = true;
+
+            @Override
+            public void run() {
+                runOnUiThread(() -> {
+                    if (visible) {
+                        redLine.setVisibility(View.VISIBLE);
+                    } else {
+                        redLine.setVisibility(View.INVISIBLE);
+                    }
+                    visible = !visible;
+                });
+            }
+        }, 0, 300);
+        codeScanner.startPreview();
+    }
+    private void stopScanner() {
+        if (codeScanner != null) {
+            codeScanner.stopPreview();
+            codeScanner.releaseResources();
+        }
+    }
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            openScanner();
+            Toast.makeText(this, "Already Permission", Toast.LENGTH_SHORT).show();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST);
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_REQUEST) {
+            for (int i = 0; i < permissions.length; i++) {
+                String permission = permissions[i];
+                if (Manifest.permission.CAMERA.equals(permission)) {
+                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                        openScanner();
+                    } else {
+                        boolean showRationale = shouldShowRequestPermissionRationale(permission);
+                        if (!showRationale) {
+                            showPermissionDeniedDialog();
+                        } else {
+                            checkCameraPermission();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroundColor"
+    tools:context=".QrCodeScannerActivity">
+
+    <RelativeLayout
+        android:id="@+id/relative"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:orientation="vertical">
+        <include
+            android:id="@+id/lay"
+            layout="@layout/activity_title" />
+
+        <LinearLayout
+            android:id="@+id/your_ad_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@+id/lay"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/LinkColor"
+            android:textSize="22sp"
+            android:layout_marginTop="50dp"
+            android:layout_marginStart="20dp"
+            android:layout_below="@+id/your_ad_layout"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:layout_marginLeft="18dp"
+            android:layout_marginRight="18dp"
+            android:layout_marginBottom="50dp"
+            android:layout_below="@+id/result"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCopy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/copy"
+                android:textAllCaps="false"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:textColor="@color/buttonColor"
+                android:background="@drawable/button_background_color"
+                android:textSize="14sp"
+                />
+            <Button
+                android:id="@+id/btnShare"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/share"
+                android:textAllCaps="false"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:textColor="@color/buttonColor"
+                android:background="@drawable/button_background_color"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnWebView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/search"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonColor"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:background="@drawable/button_background_color"
+                android:textSize="14sp"
+                />
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/againScan"
+            android:layout_marginTop="50dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="40dp"
+            android:layout_alignParentBottom="true"
+            android:textColor="@color/buttonColor"
+            android:background="@drawable/button_background_color"
+            android:textSize="14sp"
+            android:text="@string/again_scan_barcode_or_qr_code"
+            android:textAllCaps="false"/>
+
+    </RelativeLayout>
+
+    <com.budiyev.android.codescanner.CodeScannerView
+        android:id="@+id/scanner_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:flashButtonVisible="true"
+        app:flashButtonColor="@color/white"
+        app:autoFocusButtonVisible="true"
+        app:maskColor="#6F000000"
+        app:autoFocusButtonColor="@color/white"/>
+    <View
+        android:id="@+id/red_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FF0000"
+        android:layout_centerVertical="true"
+        android:visibility="gone"/>
+
+</RelativeLayout>
